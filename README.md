@@ -5,7 +5,7 @@
 
 | **Login Interface** | **Dashboard View** |
 |:---:|:---:|
-| ![Login Page](screenshots/login-page.png) | ![Dashboard](screenshots/dashboard-page.png) |
+| ![Login Page](https://github.com/Abhishek4597/Image-Manager/blob/33e3af76366fa775b82d9406167b4f603fc5522a/Screenshot%202026-01-09%20124313.png) | ![Dashboard](https://github.com/Abhishek4597/Image-Manager/blob/e54a148a673fa9f640b3d690f70401dbae76c705/Screenshot%202026-01-09%20123959.png) |
 | *Modern gradient login with password toggle* | *Main gallery with role-based color coding* |
 
 | **Upload Interface** | **Search Functionality** |
