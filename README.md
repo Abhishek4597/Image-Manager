@@ -15,7 +15,7 @@
 
 | **User Management** | **Image Viewer** |
 |:---:|:---:|
-| ![Create User](https://github.com/Abhishek4597/Image-Manager/blob/137f43b8b4922d71987412a0a51a2a75757abf86/Screenshot%202026-01-09%20124041.png) | ![Image Viewer](https://github.com/Abhishek4597/Image-Manager/blob/436d7f634b36424d7b04c7740f4ca2b2f3ccee79/Screenshot%202026-01-09%20124100.png) |
+| ![Create User](https://github.com/Abhishek4597/Image-Manager/blob/137f43b8b4922d71987412a0a51a2a75757abf86/Screenshot%202026-01-09%20124041.png) | ![Image Viewer](https://github.com/Abhishek4597/Image-Manager/blob/1b6bcb97d430cee691c545b988d711ef20aca850/Screenshot%202026-01-09%20125145.png) |
 | *Admin interface for creating users with roles* | *Full-screen viewer with zoom and navigation* |
 
 ---
