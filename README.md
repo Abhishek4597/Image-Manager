@@ -10,18 +10,13 @@
 
 | **Upload Interface** | **Search Functionality** |
 |:---:|:---:|
-| ![Upload Page](screenshots/upload-page.png) | ![Search Page](screenshots/search-page.png) |
+| ![Upload Page](https://github.com/Abhishek4597/Image-Manager/blob/137f43b8b4922d71987412a0a51a2a75757abf86/Screenshot%202026-01-09%20124010.png) | ![Search Page](https://github.com/Abhishek4597/Image-Manager/blob/436d7f634b36424d7b04c7740f4ca2b2f3ccee79/Screenshot%202026-01-09%20124032.png) |
 | *File upload with preview and validation* | *Advanced search with filters and results* |
 
 | **User Management** | **Image Viewer** |
 |:---:|:---:|
-| ![Create User](screenshots/create-user.png) | ![Image Viewer](screenshots/image-viewer.png) |
+| ![Create User](https://github.com/Abhishek4597/Image-Manager/blob/137f43b8b4922d71987412a0a51a2a75757abf86/Screenshot%202026-01-09%20124041.png) | ![Image Viewer](https://github.com/Abhishek4597/Image-Manager/blob/436d7f634b36424d7b04c7740f4ca2b2f3ccee79/Screenshot%202026-01-09%20124100.png) |
 | *Admin interface for creating users with roles* | *Full-screen viewer with zoom and navigation* |
-
-| **Mobile Dashboard** | **Role Indicators** |
-|:---:|:---:|
-| ![Mobile View](screenshots/mobile-dashboard.png) | ![Role Colors](screenshots/role-colors.png) |
-| *Responsive design for mobile devices* | *Visual role indicators (5 different colors)* |
 
 ---
 
