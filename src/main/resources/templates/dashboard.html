@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>Dashboard - Image Manager</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<style>
+		.tag-with-delete {
+			position: relative;
+			display: inline-flex;
+			align-items: center;
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			color: white;
+			padding: 4px 8px 4px 12px;
+			border-radius: 20px;
+			font-size: 0.8rem;
+			margin: 2px;
+			transition: all 0.2s;
+		}
+
+		.tag-with-delete:hover {
+			background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+		}
+
+		.delete-tag-btn {
+			background: none;
+			border: none;
+			color: white;
+			cursor: pointer;
+			font-size: 0.7rem;
+			margin-left: 4px;
+			padding: 2px 4px;
+			border-radius: 50%;
+			transition: all 0.2s;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			width: 16px;
+			height: 16px;
+		}
+
+		.delete-tag-btn:hover {
+			background: rgba(255, 255, 255, 0.3);
+			transform: scale(1.1);
+		}
+
+		.description-form {
+			display: none;
+			margin-top: 10px;
+		}
+
+		.description-textarea {
+			width: 100%;
+			min-height: 80px;
+			padding: 8px;
+			border: 1px solid #ddd;
+			border-radius: 4px;
+			font-size: 0.9rem;
+			resize: vertical;
+			font-family: inherit;
+		}
+
+		.description-text {
+			padding: 4px 8px;
+			border-radius: 4px;
+		}
+
+		.description-text.clickable {
+			cursor: pointer;
+			transition: background-color 0.2s;
+		}
+
+		.description-text.clickable:hover {
+			background-color: #f8f9fa;
+		}
+
+		.description-edit-buttons {
+			display: flex;
+			gap: 5px;
+			margin-top: 8px;
+			justify-content: flex-end;
+		}
+
+		.image-debug {
+			font-size: 0.7rem;
+			color: #dc3545;
+			background: #f8f9fa;
+			padding: 2px 4px;
+			border-radius: 3px;
+			margin-top: 4px;
+			display: none;
+		}
+
+		.debug-mode .image-debug {
+			display: block;
+		}
+
+		.image-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+			gap: 1.5rem;
+			margin: 1rem 0;
+		}
+
+		.image-card {
+			border: 1px solid #dee2e6;
+			border-radius: 12px;
+			padding: 15px;
+			text-align: center;
+			background: white;
+			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+			transition: transform 0.2s, box-shadow 0.2s;
+		}
+
+		.image-card:hover {
+			transform: translateY(-5px);
+			box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+		}
+
+		.image-card img,
+		.image-card video {
+			max-width: 100%;
+			height: 220px;
+			object-fit: cover;
+			border-radius: 8px;
+			border: 1px solid #eee;
+			cursor: pointer;
+			transition: transform 0.2s;
+			background: #f8f9fa;
+		}
+
+		.image-card img:hover,
+		.image-card video:hover {
+			transform: scale(1.05);
+		}
+
+		.video-thumbnail {
+			position: relative;
+		}
+
+		.video-thumbnail::after {
+			content: '▶';
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			font-size: 3rem;
+			color: white;
+			text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+			opacity: 0.8;
+			transition: opacity 0.2s;
+		}
+
+		.video-thumbnail:hover::after {
+			opacity: 1;
+		}
+
+		.video-type-badge {
+			position: absolute;
+			top: 10px;
+			left: 10px;
+			background: rgba(0, 0, 0, 0.7);
+			color: white;
+			padding: 2px 8px;
+			border-radius: 12px;
+			font-size: 0.7rem;
+			z-index: 2;
+		}
+
+		.image-title {
+			font-weight: 600;
+			margin: 10px 0 5px 0;
+			color: #333;
+		}
+
+		.image-description {
+			color: #666;
+			font-size: 0.9rem;
+			margin-bottom: 10px;
+			min-height: 40px;
+		}
+
+		.tags-container {
+			margin: 10px 0;
+			min-height: 30px;
+		}
+
+		.tag {
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			color: white;
+			padding: 4px 10px;
+			border-radius: 20px;
+			font-size: 0.8rem;
+			margin: 2px;
+			display: inline-block;
+		}
+
+		.tag-form {
+			display: none;
+			margin-top: 10px;
+		}
+
+		.tag-input-group {
+			display: flex;
+			gap: 5px;
+		}
+
+		.tag-input {
+			flex: 1;
+			padding: 4px 8px;
+			border: 1px solid #ddd;
+			border-radius: 4px;
+			font-size: 0.8rem;
+		}
+
+		.image-meta {
+			color: #888;
+			font-size: 0.8rem;
+			margin-top: 10px;
+			border-top: 1px solid #eee;
+			padding-top: 8px;
+		}
+
+		.action-buttons {
+			margin-top: 12px;
+			display: flex;
+			gap: 8px;
+			justify-content: center;
+			flex-wrap: wrap;
+		}
+
+		.btn-sm {
+			padding: 4px 12px;
+			font-size: 0.8rem;
+		}
+
+		.empty-state {
+			text-align: center;
+			padding: 60px 20px;
+			color: #666;
+		}
+
+		.empty-state-icon {
+			font-size: 4rem;
+			margin-bottom: 20px;
+			opacity: 0.5;
+		}
+
+		.source-badge {
+			font-size: 0.7rem;
+			margin-left: 5px;
+		}
+
+		.sync-info {
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			color: white;
+			padding: 10px 15px;
+			border-radius: 8px;
+			margin-bottom: 20px;
+		}
+
+		.pagination-container {
+			display: flex;
+			justify-content: center;
+			margin: 2rem 0;
+			flex-wrap: wrap;
+			gap: 0.5rem;
+		}
+
+		.page-info {
+			text-align: center;
+			color: #666;
+			margin-bottom: 1rem;
+		}
+
+		.role-badge {
+			position: absolute;
+			top: 10px;
+			right: 10px;
+			z-index: 10;
+		}
+
+		.viewer-role {
+			border-left: 4px solid #6c757d;
+		}
+
+		.tagger-role {
+			border-left: 4px solid #17a2b8;
+		}
+
+		.uploader-role {
+			border-left: 4px solid #28a745;
+		}
+
+		.moderator-role {
+			border-left: 4px solid #ffc107;
+		}
+
+		.admin-role {
+			border-left: 4px solid #dc3545;
+		}
+
+		.image-modal {
+			display: none;
+			position: fixed;
+			z-index: 1000;
+			left: 0;
+			top: 0;
+			width: 100%;
+			height: 100%;
+			background-color: rgba(0, 0, 0, 0.9);
+			animation: fadeIn 0.3s;
+			overflow: hidden;
+		}
+
+		.modal-container {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			height: 100vh;
+			padding: 20px;
+			box-sizing: border-box;
+			position: relative;
+		}
+
+		.modal-image-container {
+			max-width: 95vw;
+			max-height: 95vh;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			overflow: hidden;
+			border-radius: 8px;
+			background: rgba(255, 255, 255, 0.05);
+		}
+
+		.modal-content {
+			max-width: 100%;
+			max-height: 100%;
+			width: auto;
+			height: auto;
+			object-fit: contain;
+			transition: transform 0.3s ease;
+			cursor: grab;
+		}
+
+		.modal-content.zoomed {
+			cursor: grab;
+		}
+
+		.modal-content.grabbing {
+			cursor: grabbing;
+		}
+
+		.close {
+			position: fixed;
+			top: 20px;
+			right: 35px;
+			color: #f1f1f1;
+			font-size: 40px;
+			font-weight: bold;
+			cursor: pointer;
+			transition: 0.3s;
+			z-index: 1001;
+			background: rgba(0, 0, 0, 0.5);
+			border-radius: 50%;
+			width: 50px;
+			height: 50px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		.close:hover {
+			color: #bbb;
+			background: rgba(0, 0, 0, 0.7);
+		}
+
+		.navigation {
+			position: fixed;
+			top: 50%;
+			width: 100%;
+			display: flex;
+			justify-content: space-between;
+			padding: 0 20px;
+			transform: translateY(-50%);
+			z-index: 1001;
+		}
+
+		.nav-btn {
+			background: rgba(255, 255, 255, 0.2);
+			border: none;
+			color: white;
+			font-size: 24px;
+			padding: 15px;
+			border-radius: 50%;
+			cursor: pointer;
+			transition: 0.3s;
+			width: 50px;
+			height: 50px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			backdrop-filter: blur(10px);
+		}
+
+		.nav-btn:hover {
+			background: rgba(255, 255, 255, 0.3);
+		}
+
+		.image-counter {
+			position: fixed;
+			top: 20px;
+			left: 35px;
+			color: white;
+			font-size: 1rem;
+			background: rgba(0, 0, 0, 0.5);
+			padding: 8px 16px;
+			border-radius: 20px;
+			z-index: 1001;
+		}
+
+		.zoom-controls {
+			position: fixed;
+			top: 20px;
+			left: 50%;
+			transform: translateX(-50%);
+			display: flex;
+			gap: 10px;
+			z-index: 1001;
+		}
+
+		.zoom-btn {
+			background: rgba(255, 255, 255, 0.2);
+			border: none;
+			color: white;
+			font-size: 18px;
+			padding: 10px 15px;
+			border-radius: 25px;
+			cursor: pointer;
+			transition: 0.3s;
+			backdrop-filter: blur(10px);
+			display: flex;
+			align-items: center;
+			gap: 5px;
+		}
+
+		.zoom-btn:hover {
+			background: rgba(255, 255, 255, 0.3);
+		}
+
+		.reset-btn {
+			background: rgba(255, 100, 100, 0.3);
+		}
+
+		.reset-btn:hover {
+			background: rgba(255, 100, 100, 0.5);
+		}
+
+		@keyframes fadeIn {
+			from {
+				opacity: 0;
+			}
+
+			to {
+				opacity: 1;
+			}
+		}
+
+		@media (max-width: 768px) {
+			.modal-image-container {
+				max-width: 98vw;
+				max-height: 90vh;
+			}
+
+			.nav-btn {
+				width: 40px;
+				height: 40px;
+				font-size: 18px;
+			}
+
+			.close {
+				font-size: 30px;
+				top: 15px;
+				right: 25px;
+				width: 40px;
+				height: 40px;
+			}
+
+			.image-counter {
+				top: 15px;
+				left: 25px;
+				font-size: 0.9rem;
+			}
+
+			.zoom-controls {
+				top: 70px;
+			}
+
+			.zoom-btn {
+				font-size: 16px;
+				padding: 8px 12px;
+			}
+
+			.pagination-container {
+				gap: 0.25rem;
+			}
+		}
+
+		@media (max-width: 480px) {
+			.modal-image-container {
+				max-height: 85vh;
+			}
+
+			.navigation {
+				padding: 0 10px;
+			}
+
+			.zoom-controls {
+				flex-wrap: wrap;
+				justify-content: center;
+			}
+		}
+	</style>
+</head>
+
+<body th:classappend="${userRole} ? '${userRole.toLowerCase()}-role' : ''" id="mainBody">
+	<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+		<div class="container">
+			<a class="navbar-brand" href="/dashboard">📷 IRICEN Image Management & Retrieval System</a>
+			<div class="navbar-nav ms-auto">
+				<a class="nav-link" href="/dashboard">🏠 Dashboard</a>
+
+				<a th:if="${#strings.equalsIgnoreCase(userRole, 'UPLOADER') 
+                          or #strings.equalsIgnoreCase(userRole, 'MODERATOR') 
+                          or #strings.equalsIgnoreCase(userRole, 'ADMIN')}" class="nav-link" href="/upload">📤 Upload</a>
+
+				<a class="nav-link" href="/search">🔍 Search</a>
+
+				<a th:if="${#strings.equalsIgnoreCase(userRole, 'ADMIN')}" class="nav-link" href="/create-user">👤 Add
+					User</a>
+				<form th:action="@{/logout}" method="post" class="d-inline">
+					<button type="submit" class="btn btn-link nav-link">🚪 Logout</button>
+				</form>
+
+				<span class="nav-link text-light">
+					Role: <span th:text="${userRole}">Unknown</span>
+				</span>
+
+				<button class="btn btn-sm btn-warning ms-2" onclick="toggleDebug()">🐞 Debug</button>
+			</div>
+		</div>
+	</nav>
+
+	<div class="container mt-4">
+		<div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+			<span th:text="${success}"></span>
+			<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+		</div>
+		<div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+			<span th:text="${error}"></span>
+			<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+		</div>
+
+		<div id="debugInfo" class="alert alert-info" style="display: none;">
+			<strong>Debug Information:</strong><br>
+			User Role: <span th:text="${userRole}">Unknown</span><br>
+			Total Images: <span th:text="${totalItems}">0</span><br>
+			Current Page: <span th:text="${currentPage}">0</span><br>
+			Images List Size: <span th:text="${images != null ? images.size() : 'null'}">0</span>
+		</div>
+
+		<div class="sync-info">
+			<div class="row align-items-center">
+				<div class="col">
+					<strong>📊 Gallery Overview</strong><br>
+					<span th:if="${stats}" th:text="' | ' + ${stats}"></span>
+				</div>
+				<div class="col-auto">
+					<form th:if="${#strings.equalsIgnoreCase(userRole, 'ADMIN')}" th:action="@{/sync-files}"
+						method="post" class="d-inline">
+						<button type="submit" class="btn btn-sm btn-light">
+							🔄 Sync File System Images
+						</button>
+					</form>
+				</div>
+			</div>
+		</div>
+
+		<div class="d-flex justify-content-between align-items-center mb-4">
+			<div>
+				<h2>My Image Gallery</h2>
+				<p class="text-muted mb-0" th:text="'Total images: ' + ${totalItems}"></p>
+			</div>
+			<div>
+				<a th:if="${#strings.equalsIgnoreCase(userRole, 'UPLOADER') 
+                          or #strings.equalsIgnoreCase(userRole, 'MODERATOR') 
+                          or #strings.equalsIgnoreCase(userRole, 'ADMIN')}" href="/upload" class="btn btn-primary">
+					📤 Upload New Image
+				</a>
+			</div>
+		</div>
+
+		<div class="page-info">
+			Page <span th:text="${currentPage + 1}">1</span> of <span th:text="${totalPages}">1</span> |
+			Showing <span th:text="${images != null ? images.size() : 0}">0</span> of <span
+				th:text="${totalItems}">0</span> total images
+		</div>
+
+		<div th:if="${images != null and !images.empty}">
+			<div class="image-grid">
+				<div th:each="image, iter : ${images}" class="image-card" th:attr="data-image-index=${iter.index}">
+
+					<div th:if="${#strings.contains(image.fileName.toLowerCase(), '.mp4') 
+							   or #strings.contains(image.fileName.toLowerCase(), '.webm') 
+							   or #strings.contains(image.fileName.toLowerCase(), '.mov') 
+							   or #strings.contains(image.fileName.toLowerCase(), '.avi')}">
+						<div style="position: relative;">
+							<div class="video-type-badge">VIDEO</div>
+							<video th:src="@{/uploads/{fileName}(fileName=${image.fileName})}"
+								th:attr="data-index=${iter.index}" onclick="openModal(this)"
+								class="main-media video-thumbnail" data-filename="${image.fileName}" data-type="video"
+								onerror="handleMediaError(this)" preload="metadata"
+								style="max-width: 100%; height: 220px; object-fit: cover; border-radius: 8px; border: 1px solid #eee; cursor: pointer;">
+								Your browser does not support the video tag.
+							</video>
+						</div>
+					</div>
+
+					<div th:unless="${#strings.contains(image.fileName.toLowerCase(), '.mp4') 
+								   or #strings.contains(image.fileName.toLowerCase(), '.webm') 
+								   or #strings.contains(image.fileName.toLowerCase(), '.mov') 
+								   or #strings.contains(image.fileName.toLowerCase(), '.avi')}">
+						<img th:src="@{/uploads/{fileName}(fileName=${image.fileName})}" th:alt="${image.title}"
+							th:attr="data-index=${iter.index}" onclick="openModal(this)" class="main-media"
+							data-filename="${image.fileName}" data-type="image" onerror="handleMediaError(this)"
+							style="max-width: 100%; height: 220px; object-fit: cover; border-radius: 8px; border: 1px solid #eee; cursor: pointer;">
+					</div>
+
+					<div class="image-debug">
+						File: <span th:text="${image.fileName}">filename</span><br>
+						Type: <span th:if="${#strings.contains(image.fileName.toLowerCase(), '.mp4') 
+										   or #strings.contains(image.fileName.toLowerCase(), '.webm') 
+										   or #strings.contains(image.fileName.toLowerCase(), '.mov') 
+										   or #strings.contains(image.fileName.toLowerCase(), '.avi')}">Video</span>
+						<span th:unless="${#strings.contains(image.fileName.toLowerCase(), '.mp4') 
+											   or #strings.contains(image.fileName.toLowerCase(), '.webm') 
+											   or #strings.contains(image.fileName.toLowerCase(), '.mov') 
+											   or #strings.contains(image.fileName.toLowerCase(), '.avi')}">Image</span><br>
+						Path: <span th:text="@{/uploads/{fileName}(fileName=${image.fileName})}">path</span>
+					</div>
+
+					<div class="image-title">
+						<span th:text="${image.title}">Image Title</span>
+						<span th:if="${image.id != null}" class="badge bg-success source-badge">DB</span>
+						<span th:unless="${image.id != null}" class="badge bg-warning text-dark source-badge">FS</span>
+					</div>
+
+					<div class="image-title">
+						<div th:if="${image.description != null and image.description != ''}"
+							th:classappend="${#strings.equalsIgnoreCase(userRole, 'ADMIN')} ? 'description-text clickable' : 'description-text'"
+							th:onclick="${#strings.equalsIgnoreCase(userRole, 'ADMIN')} ? 'showDescriptionForm(' + ${image.id} + ')' : ''"
+							th:id="'description-text-' + ${image.id}">
+							<span th:text="${image.description}">Description</span>
+							<small th:if="${#strings.equalsIgnoreCase(userRole, 'ADMIN')}"
+								class="text-muted d-block mt-1">Click to edit</small>
+						</div>
+						<div th:unless="${image.description != null and image.description != ''}"
+							th:classappend="${#strings.equalsIgnoreCase(userRole, 'ADMIN')} ? 'description-text clickable text-muted' : 'description-text text-muted'"
+							th:onclick="${#strings.equalsIgnoreCase(userRole, 'ADMIN')} ? 'showDescriptionForm(' + ${image.id} + ')' : ''"
+							th:id="'description-text-' + ${image.id}">
+							No description
+							<small th:if="${#strings.equalsIgnoreCase(userRole, 'ADMIN')}"
+								class="text-muted d-block mt-1">Click to add description</small>
+						</div>
+
+						<div th:if="${#strings.equalsIgnoreCase(userRole, 'ADMIN')}" class="description-form"
+							th:id="'description-form-' + ${image.id}">
+							<form th:action="@{'/image/' + ${image.id} + '/update-description'}" method="post">
+								<textarea name="description" class="description-textarea"
+									placeholder="Enter image description..." maxlength="500"
+									th:text="${image.description}"></textarea>
+								<div class="description-edit-buttons">
+									<button type="submit" class="btn btn-success btn-sm">💾 Save</button>
+									<button type="button" class="btn btn-secondary btn-sm"
+										th:onclick="'hideDescriptionForm(' + ${image.id} + ')'">Cancel</button>
+								</div>
+							</form>
+						</div>
+					</div>
+
+					<div class="tags-container">
+						<div th:if="${image.tags != null and !image.tags.empty}">
+							<div th:each="tag : ${image.tags}" class="tag-with-delete">
+								<span th:text="${tag.name}">tag</span>
+								<form th:if="${image.id != null and (#strings.equalsIgnoreCase(userRole, 'TAGGER') 
+                                                              or #strings.equalsIgnoreCase(userRole, 'UPLOADER') 
+                                                              or #strings.equalsIgnoreCase(userRole, 'MODERATOR')
+                                                              or #strings.equalsIgnoreCase(userRole, 'ADMIN'))}"
+									th:action="@{'/image/' + ${image.id} + '/tag/' + ${tag.id} + '/delete'}"
+									method="post" class="d-inline">
+									<button type="submit" class="delete-tag-btn"
+										onclick="return confirm('Are you sure you want to delete this tag?')">
+										×
+									</button>
+								</form>
+							</div>
+						</div>
+						<div th:unless="${image.tags != null and !image.tags.empty}">
+							<span class="text-muted">No tags</span>
+						</div>
+
+						<div class="tag-form" th:id="'tag-form-' + ${image.id}">
+							<form th:action="@{'/image/' + ${image.id} + '/add-tag'}" method="post"
+								class="tag-input-group">
+								<input type="text" name="tagName" class="tag-input" placeholder="Enter tag..." required
+									maxlength="50">
+								<button type="submit" class="btn btn-success btn-sm">Add</button>
+								<button type="button" class="btn btn-secondary btn-sm"
+									th:onclick="'hideTagForm(' + ${image.id} + ')'">Cancel</button>
+							</form>
+						</div>
+					</div>
+
+					<div class="image-meta">
+
+						<div th:if="${#strings.contains(image.fileName.toLowerCase(), '.mp4') 
+								   or #strings.contains(image.fileName.toLowerCase(), '.webm') 
+								   or #strings.contains(image.fileName.toLowerCase(), '.mov') 
+								   or #strings.contains(image.fileName.toLowerCase(), '.avi')}">
+							Type: Video
+						</div>
+					</div>
+
+					<div class="action-buttons">
+						<button type="button" class="btn btn-outline-primary btn-sm"
+							th:onclick="'openModalFromIndex(' + ${iter.index} + ')'">
+							👁️ View
+						</button>
+
+						<button th:if="${image.id != null and #strings.equalsIgnoreCase(userRole, 'ADMIN')}"
+							type="button" class="btn btn-outline-warning btn-sm"
+							th:onclick="'showDescriptionForm(' + ${image.id} + ')'">
+							📝 Edit Desc
+						</button>
+
+						<button th:if="${image.id != null and (#strings.equalsIgnoreCase(userRole, 'TAGGER') 
+                                                              or #strings.equalsIgnoreCase(userRole, 'UPLOADER') 
+                                                              or #strings.equalsIgnoreCase(userRole, 'MODERATOR')
+                                                              or #strings.equalsIgnoreCase(userRole, 'ADMIN'))}"
+							type="button" class="btn btn-outline-info btn-sm"
+							th:onclick="'showTagForm(' + ${image.id} + ')'">
+							🏷️ Add Tag
+						</button>
+
+						<form th:if="${image.id != null and (userRole == 'MODERATOR' or userRole == 'ADMIN')}"
+							th:action="@{'/image/' + ${image.id} + '/delete'}" method="post" class="d-inline">
+							<input type="hidden" name="fromSearch" value="false">
+							<button type="submit" class="btn btn-outline-danger btn-sm"
+								onclick="return confirmDelete(this)">
+								🗑️ Delete
+							</button>
+						</form>
+						<form th:unless="${image.id != null}" th:if="${#strings.equalsIgnoreCase(userRole, 'MODERATOR') 
+                                                           or #strings.equalsIgnoreCase(userRole, 'ADMIN')}"
+							th:action="@{'/image/add-to-database'}" method="post" class="d-inline">
+							<input type="hidden" name="fileName" th:value="${image.fileName}">
+							<input type="hidden" name="title" th:value="${image.title}">
+							<input type="hidden" name="originalFileName" th:value="${image.originalFileName}">
+							<button type="submit" class="btn btn-outline-success btn-sm">
+								💾 Add to DB
+							</button>
+						</form>
+					</div>
+				</div>
+			</div>
+
+			<div class="pagination-container" th:if="${totalPages > 1}">
+				<a th:if="${currentPage > 0}" th:href="@{/dashboard(page=${currentPage - 1}, size=${pageSize})}"
+					class="btn btn-outline-primary btn-sm">
+					&laquo; Previous
+				</a>
+				<button th:unless="${currentPage > 0}" class="btn btn-outline-secondary btn-sm" disabled>
+					&laquo; Previous
+				</button>
+
+				<th:block th:with="startPage=${T(java.lang.Math).max(0, T(java.lang.Math).min(currentPage - 2, totalPages - 5))},
+                                  endPage=${T(java.lang.Math).min(totalPages - 1, startPage + 4)}">
+					<th:block th:each="i : ${#numbers.sequence(startPage, endPage)}">
+						<a th:href="@{/dashboard(page=${i}, size=${pageSize})}"
+							th:class="${i == currentPage} ? 'btn btn-primary btn-sm' : 'btn btn-outline-primary btn-sm'"
+							th:text="${i + 1}">
+						</a>
+					</th:block>
+				</th:block>
+
+				<a th:if="${currentPage < totalPages - 1}"
+					th:href="@{/dashboard(page=${currentPage + 1}, size=${pageSize})}"
+					class="btn btn-outline-primary btn-sm">
+					Next &raquo;
+				</a>
+				<button th:unless="${currentPage < totalPages - 1}" class="btn btn-outline-secondary btn-sm" disabled>
+					Next &raquo;
+				</button>
+			</div>
+		</div>
+
+		<div th:unless="${images != null and !images.empty}" class="empty-state">
+			<div class="empty-state-icon">📷</div>
+			<h3>No Images Yet</h3>
+			<p class="mb-4">Start building your image collection by uploading your first image!</p>
+			<div>
+				<a th:if="${#strings.equalsIgnoreCase(userRole, 'UPLOADER') 
+                          or #strings.equalsIgnoreCase(userRole, 'MODERATOR') 
+                          or #strings.equalsIgnoreCase(userRole, 'ADMIN')}" href="/upload"
+					class="btn btn-primary btn-lg">
+					📤 Upload First Image
+				</a>
+			</div>
+		</div>
+	</div>
+
+	<div id="imageModal" class="image-modal">
+		<span class="close" onclick="closeModal()">&times;</span>
+		<div class="image-counter" id="imageCounter"></div>
+		<div class="zoom-controls" id="zoomControls">
+			<button class="zoom-btn" onclick="zoomOut()">🔍−</button>
+			<button class="zoom-btn" onclick="zoomIn()">🔍+</button>
+			<button class="zoom-btn reset-btn" onclick="resetZoom()">⟲ Reset</button>
+		</div>
+		<div class="navigation">
+			<button class="nav-btn" onclick="changeImage(-1)">❮</button>
+			<button class="nav-btn" onclick="changeImage(1)">❯</button>
+		</div>
+		<div class="modal-container">
+			<div class="modal-image-container">
+				<img class="modal-content" id="modalImage" style="display: none;">
+				<video class="modal-content" id="modalVideo" style="display: none;" controls>
+					Your browser does not support the video tag.
+				</video>
+			</div>
+		</div>
+	</div>
+
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+	<script>
+		let debugMode = false;
+
+		function toggleDebug() {
+			debugMode = !debugMode;
+			document.getElementById('mainBody').classList.toggle('debug-mode', debugMode);
+			document.getElementById('debugInfo').style.display = debugMode ? 'block' : 'none';
+			console.log('Debug mode:', debugMode);
+		}
+
+		function handleMediaError(element) {
+			console.error('Media failed to load:', element.src);
+			console.error('Filename:', element.getAttribute('data-filename'));
+
+			const filename = element.getAttribute('data-filename');
+
+			element.src = '/uploads/' + filename;
+
+			setTimeout(() => {
+				if (element.tagName === 'IMG' && element.naturalWidth === 0) {
+					element.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5JbWFnZTwvdGV4dD48L3N2Zz4=';
+					console.error('All media loading attempts failed for:', filename);
+				}
+			}, 100);
+		}
+
+		function testMediaAccessibility() {
+			console.log('=== Testing Media Accessibility ===');
+			const mediaElements = document.querySelectorAll('.main-media');
+			mediaElements.forEach((element, index) => {
+				if (element.tagName === 'IMG') {
+					const testImg = new Image();
+					testImg.onload = function () {
+						console.log(`✓ Image ${index} accessible:`, element.src);
+					};
+					testImg.onerror = function () {
+						console.error(`✗ Image ${index} NOT accessible:`, element.src);
+					};
+					testImg.src = element.src;
+				} else if (element.tagName === 'VIDEO') {
+					const testVideo = document.createElement('video');
+					testVideo.oncanplay = function () {
+						console.log(`✓ Video ${index} accessible:`, element.src);
+					};
+					testVideo.onerror = function () {
+						console.error(`✗ Video ${index} NOT accessible:`, element.src);
+					};
+					testVideo.src = element.src;
+				}
+			});
+		}
+
+		let currentImageIndex = 0;
+		let currentScale = 1;
+		let isDragging = false;
+		let startX, startY, scrollLeft, scrollTop;
+		let allMedia = [];
+		let currentMediaType = 'image'; 
+
+		document.addEventListener('DOMContentLoaded', function () {
+			allMedia = Array.from(document.querySelectorAll('.image-card'));
+
+			setTimeout(testMediaAccessibility, 1000);
+		});
+
+		function openModal(element) {
+			currentImageIndex = parseInt(element.getAttribute('data-index'));
+			currentMediaType = element.getAttribute('data-type') || 'image';
+			resetZoom();
+			updateModal();
+			document.getElementById('imageModal').style.display = 'block';
+			document.body.style.overflow = 'hidden';
+
+			if (currentMediaType === 'video') {
+				const modalVideo = document.getElementById('modalVideo');
+				modalVideo.play().catch(e => console.log('Autoplay prevented:', e));
+			}
+		}
+
+		function openModalFromIndex(index) {
+			currentImageIndex = index;
+			const element = allMedia[index].querySelector('.main-media');
+			currentMediaType = element.getAttribute('data-type') || 'image';
+			resetZoom();
+			updateModal();
+			document.getElementById('imageModal').style.display = 'block';
+			document.body.style.overflow = 'hidden';
+
+			if (currentMediaType === 'video') {
+				const modalVideo = document.getElementById('modalVideo');
+				modalVideo.play().catch(e => console.log('Autoplay prevented:', e));
+			}
+		}
+
+		function closeModal() {
+			const modalVideo = document.getElementById('modalVideo');
+			if (modalVideo) {
+				modalVideo.pause();
+				modalVideo.currentTime = 0;
+			}
+
+			document.getElementById('imageModal').style.display = 'none';
+			document.body.style.overflow = 'auto';
+			resetZoom();
+		}
+
+		function changeImage(direction) {
+			const modalVideo = document.getElementById('modalVideo');
+			if (modalVideo) {
+				modalVideo.pause();
+				modalVideo.currentTime = 0;
+			}
+
+			currentImageIndex += direction;
+			if (currentImageIndex >= allMedia.length) {
+				currentImageIndex = 0;
+			} else if (currentImageIndex < 0) {
+				currentImageIndex = allMedia.length - 1;
+			}
+
+			const element = allMedia[currentImageIndex].querySelector('.main-media');
+			currentMediaType = element.getAttribute('data-type') || 'image';
+			resetZoom();
+			updateModal();
+
+			if (currentMediaType === 'video') {
+				const modalVideo = document.getElementById('modalVideo');
+				modalVideo.play().catch(e => console.log('Autoplay prevented:', e));
+			}
+		}
+
+		function updateModal() {
+			const element = allMedia[currentImageIndex].querySelector('.main-media');
+			const modalImage = document.getElementById('modalImage');
+			const modalVideo = document.getElementById('modalVideo');
+			const zoomControls = document.getElementById('zoomControls');
+
+			if (currentMediaType === 'video') {
+				modalImage.style.display = 'none';
+				modalVideo.style.display = 'block';
+				zoomControls.style.display = 'none';
+
+				modalVideo.src = element.src;
+				modalVideo.load();
+			} else {
+				modalImage.style.display = 'block';
+				modalVideo.style.display = 'none';
+				zoomControls.style.display = 'flex';
+
+				modalImage.src = element.src;
+				modalImage.alt = element.alt || 'Image';
+
+				modalImage.style.transform = 'scale(1) translate(0px, 0px)';
+				currentScale = 1;
+			}
+
+			document.getElementById('imageCounter').textContent = `${currentImageIndex + 1} / ${allMedia.length}`;
+		}
+
+		function zoomIn() {
+			if (currentMediaType === 'image') {
+				const modalImage = document.getElementById('modalImage');
+				currentScale = Math.min(currentScale + 0.25, 3);
+				modalImage.style.transform = `scale(${currentScale})`;
+				modalImage.classList.add('zoomed');
+			}
+		}
+
+		function zoomOut() {
+			if (currentMediaType === 'image') {
+				const modalImage = document.getElementById('modalImage');
+				currentScale = Math.max(currentScale - 0.25, 1);
+				modalImage.style.transform = `scale(${currentScale})`;
+				if (currentScale === 1) {
+					modalImage.classList.remove('zoomed');
+				}
+			}
+		}
+
+		function resetZoom() {
+			if (currentMediaType === 'image') {
+				const modalImage = document.getElementById('modalImage');
+				currentScale = 1;
+				modalImage.style.transform = 'scale(1) translate(0px, 0px)';
+				modalImage.classList.remove('zoomed');
+			}
+		}
+
+		document.getElementById('modalImage').addEventListener('mousedown', startDrag);
+		document.getElementById('modalImage').addEventListener('touchstart', startDrag);
+
+		function startDrag(e) {
+			if (currentMediaType === 'image' && currentScale > 1) {
+				e.preventDefault();
+				isDragging = true;
+				const modalImage = document.getElementById('modalImage');
+				modalImage.classList.add('grabbing');
+
+				const clientX = e.clientX || e.touches[0].clientX;
+				const clientY = e.clientY || e.touches[0].clientY;
+
+				startX = clientX - modalImage.offsetLeft;
+				startY = clientY - modalImage.offsetTop;
+				scrollLeft = modalImage.scrollLeft;
+				scrollTop = modalImage.scrollTop;
+
+				document.addEventListener('mousemove', drag);
+				document.addEventListener('touchmove', drag);
+				document.addEventListener('mouseup', stopDrag);
+				document.addEventListener('touchend', stopDrag);
+			}
+		}
+
+		function drag(e) {
+			if (!isDragging) return;
+			e.preventDefault();
+
+			const modalImage = document.getElementById('modalImage');
+			const clientX = e.clientX || e.touches[0].clientX;
+			const clientY = e.clientY || e.touches[0].clientY;
+
+			const x = clientX - startX;
+			const y = clientY - startY;
+
+			modalImage.style.transform = `scale(${currentScale}) translate(${x}px, ${y}px)`;
+		}
+
+		function stopDrag() {
+			isDragging = false;
+			const modalImage = document.getElementById('modalImage');
+			modalImage.classList.remove('grabbing');
+
+			document.removeEventListener('mousemove', drag);
+			document.removeEventListener('touchmove', drag);
+			document.removeEventListener('mouseup', stopDrag);
+			document.removeEventListener('touchend', stopDrag);
+		}
+
+		document.getElementById('imageModal').addEventListener('click', function (e) {
+			if (e.target === this) {
+				closeModal();
+			}
+		});
+
+		document.addEventListener('keydown', function (e) {
+			if (document.getElementById('imageModal').style.display === 'block') {
+				if (e.key === 'Escape') {
+					closeModal();
+				} else if (e.key === 'ArrowLeft') {
+					changeImage(-1);
+				} else if (e.key === 'ArrowRight') {
+					changeImage(1);
+				} else if (currentMediaType === 'image') {
+					if (e.key === '+' || e.key === '=') {
+						zoomIn();
+					} else if (e.key === '-' || e.key === '_') {
+						zoomOut();
+					} else if (e.key === '0') {
+						resetZoom();
+					}
+				}
+			}
+		});
+
+		function showTagForm(imageId) {
+			document.querySelectorAll('.tag-form').forEach(form => {
+				form.style.display = 'none';
+			});
+			document.querySelectorAll('.description-form').forEach(form => {
+				form.style.display = 'none';
+			});
+
+			const tagForm = document.getElementById('tag-form-' + imageId);
+			if (tagForm) {
+				tagForm.style.display = 'block';
+				tagForm.querySelector('input').focus();
+			}
+		}
+
+		function hideTagForm(imageId) {
+			const tagForm = document.getElementById('tag-form-' + imageId);
+			if (tagForm) {
+				tagForm.style.display = 'none';
+				tagForm.querySelector('input').value = '';
+			}
+		}
+
+		function showDescriptionForm(imageId) {
+			document.querySelectorAll('.description-form').forEach(form => {
+				form.style.display = 'none';
+			});
+			document.querySelectorAll('.tag-form').forEach(form => {
+				form.style.display = 'none';
+			});
+
+			const descriptionForm = document.getElementById('description-form-' + imageId);
+			const descriptionText = document.getElementById('description-text-' + imageId);
+
+			if (descriptionForm && descriptionText) {
+				descriptionForm.style.display = 'block';
+				descriptionText.style.display = 'none';
+				descriptionForm.querySelector('textarea').focus();
+			}
+		}
+
+		function hideDescriptionForm(imageId) {
+			const descriptionForm = document.getElementById('description-form-' + imageId);
+			const descriptionText = document.getElementById('description-text-' + imageId);
+
+			if (descriptionForm && descriptionText) {
+				descriptionForm.style.display = 'none';
+				descriptionText.style.display = 'block';
+			}
+		}
+
+		document.addEventListener('click', function (event) {
+			if (!event.target.closest('.tag-form') && !event.target.closest('[onclick*="showTagForm"]')) {
+				document.querySelectorAll('.tag-form').forEach(form => {
+					form.style.display = 'none';
+					form.querySelector('input').value = '';
+				});
+			}
+
+			if (!event.target.closest('.description-form') && !event.target.closest('[onclick*="showDescriptionForm"]')) {
+				document.querySelectorAll('.description-form').forEach(form => {
+					form.style.display = 'none';
+				});
+				document.querySelectorAll('.description-text').forEach(text => {
+					text.style.display = 'block';
+				});
+			}
+		});
+
+		document.addEventListener('keydown', function (event) {
+			if (event.key === 'Escape') {
+				document.querySelectorAll('.tag-form').forEach(form => {
+					form.style.display = 'none';
+					form.querySelector('input').value = '';
+				});
+
+				document.querySelectorAll('.description-form').forEach(form => {
+					form.style.display = 'none';
+				});
+				document.querySelectorAll('.description-text').forEach(text => {
+					text.style.display = 'block';
+				});
+			}
+		});
+	</script>
+</body>
+
+</html>

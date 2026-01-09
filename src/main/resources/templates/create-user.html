@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Add User - Image Manager</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .navbar-brand {
+            font-weight: 600;
+        }
+
+        .user-form-container {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #333;
+        }
+
+        .form-header h2 {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+
+        .role-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            margin: 0.1rem;
+        }
+
+        .role-description {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+
+        .btn-create {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 0.75rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-create:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .password-strength {
+            height: 4px;
+            border-radius: 2px;
+            margin-top: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .strength-weak {
+            background-color: #dc3545;
+            width: 25%;
+        }
+
+        .strength-medium {
+            background-color: #ffc107;
+            width: 50%;
+        }
+
+        .strength-strong {
+            background-color: #28a745;
+            width: 75%;
+        }
+
+        .strength-very-strong {
+            background-color: #20c997;
+            width: 100%;
+        }
+
+        .password-requirements {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+
+        .requirement {
+            margin-bottom: 0.25rem;
+        }
+
+        .requirement.met {
+            color: #28a745;
+        }
+
+        .requirement.unmet {
+            color: #dc3545;
+        }
+
+        .back-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: #764ba2;
+        }
+
+        .role-permissions {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .permission-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .permission-list li {
+            padding: 0.25rem 0;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .permission-list li:before {
+            content: "✓ ";
+            color: #28a745;
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .user-form-container {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/dashboard">📷 IRICEN Image Management & Retrieval System</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/dashboard">🏠 Dashboard</a>
+                <a class="nav-link" href="/search">🔍 Search</a>
+                <a class="nav-link active" href="/create-user">👤 Add User</a>
+                <form th:action="@{/logout}" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-link nav-link">🚪 Logout</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="user-form-container">
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <span th:text="${success}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <span th:text="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <div class="form-header">
+                <h2>👤 Create New User</h2>
+                <p>Add a new user to the Image Manager system</p>
+            </div>
+
+            <form th:action="@{/create-user}" method="post" id="userForm">
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username *</label>
+                    <input type="text" class="form-control" id="username" name="username" 
+                           th:value="${user != null ? user.username : ''}" 
+                           required  maxlength="50"
+                           placeholder="Enter username">
+                    <div class="form-text">Username must be 3-50 characters long and can contain letters, numbers, and underscores.</div>
+                </div>
+
+               
+
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password *</label>
+                    <input type="password" class="form-control" id="password" name="password" 
+                           required minlength="2" placeholder="Enter password"
+                           onkeyup="checkPasswordStrength()">
+                    <div class="password-strength" id="passwordStrength"></div>
+                    
+                </div>
+
+               
+
+                <div class="mb-4">
+                    <label class="form-label">User Role *</label>
+                    <div class="role-permissions">
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="role" id="roleViewer" value="VIEWER" checked>
+                            <label class="form-check-label" for="roleViewer">
+                                <span class="badge bg-secondary role-badge">VIEWER</span>
+                                <div class="role-description">Can view images only</div>
+                            </label>
+                        </div>
+                        
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="role" id="roleTagger" value="TAGGER">
+                            <label class="form-check-label" for="roleTagger">
+                                <span class="badge bg-info role-badge">TAGGER</span>
+                                <div class="role-description">Can view and add/remove tags</div>
+                            </label>
+                        </div>
+                        
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="role" id="roleUploader" value="UPLOADER">
+                            <label class="form-check-label" for="roleUploader">
+                                <span class="badge bg-success role-badge">UPLOADER</span>
+                                <div class="role-description">Can view, tag, and upload images</div>
+                            </label>
+                        </div>
+                        
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="role" id="roleModerator" value="MODERATOR">
+                            <label class="form-check-label" for="roleModerator">
+                                <span class="badge bg-warning role-badge">MODERATOR</span>
+                                <div class="role-description">Can view, tag, upload, and delete any image</div>
+                            </label>
+                        </div>
+                        
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="role" id="roleAdmin" value="ADMIN">
+                            <label class="form-check-label" for="roleAdmin">
+                                <span class="badge bg-danger role-badge">ADMIN</span>
+                                <div class="role-description">Full system access including user management</div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="/dashboard" class="back-link">← Back to Dashboard</a>
+                    <button type="submit" class="btn btn-create" id="submitBtn">Create User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        function checkPasswordStrength() {
+            const password = document.getElementById('password').value;
+            const strengthBar = document.getElementById('passwordStrength');
+            const lengthReq = document.getElementById('lengthReq');
+            const numberReq = document.getElementById('numberReq');
+            const specialReq = document.getElementById('specialReq');
+            
+            let strength = 0;
+            
+            if (password.length >= 6) {
+                strength += 1;
+                lengthReq.className = 'requirement met';
+            } else {
+                lengthReq.className = 'requirement unmet';
+            }
+            
+            if (/\d/.test(password)) {
+                strength += 1;
+                numberReq.className = 'requirement met';
+            } else {
+                numberReq.className = 'requirement unmet';
+            }
+            
+            if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+                strength += 1;
+                specialReq.className = 'requirement met';
+            } else {
+                specialReq.className = 'requirement unmet';
+            }
+            
+            strengthBar.className = 'password-strength';
+            if (password.length === 0) {
+                strengthBar.style.width = '0%';
+                strengthBar.style.backgroundColor = '#e9ecef';
+            } else if (strength === 1) {
+                strengthBar.className += ' strength-weak';
+            } else if (strength === 2) {
+                strengthBar.className += ' strength-medium';
+            } else if (strength === 3) {
+                strengthBar.className += ' strength-strong';
+            }
+        }
+        
+        function checkPasswordMatch() {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const matchMessage = document.getElementById('passwordMatch');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            if (confirmPassword.length > 0 && password !== confirmPassword) {
+                matchMessage.style.display = 'block';
+                submitBtn.disabled = true;
+            } else {
+                matchMessage.style.display = 'none';
+                submitBtn.disabled = false;
+            }
+        }
+        
+        document.getElementById('userForm').addEventListener('submit', function(e) {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                e.preventDefault();
+                alert('Passwords do not match!');
+                return false;
+            }
+            
+            if (password.length < 2) {
+                e.preventDefault();
+                alert('Password must be at least 6 characters long!');
+                return false;
+            }
+        });
+        
+        checkPasswordStrength();
+    </script>
+</body>
+</html>
